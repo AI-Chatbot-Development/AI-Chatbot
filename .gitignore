@@ -139,5 +139,3 @@ venv.bak/
 
 # Docker
 .dockerignore
-docker-compose.yml
-docker-compose.override.yml

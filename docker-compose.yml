@@ -1,0 +1,8 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8501:8501"
+    command: sh -c "pip install --no-cache-dir -r requirements.txt && streamlit run src/chatbot.py --server.port=8501 --server.address=0.0.0.0"
+    volumes:
+      - .:/app
