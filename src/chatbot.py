@@ -1,24 +1,27 @@
-import streamlit as st
+import json
+import os
+from nlp_agent import get_best_match
 
-st.title("AI Chatbot")
+def load_faq(path=None):
+    if path is None:
+        path = os.path.join(os.path.dirname(__file__), '../data/faq.json')
+    with open(path, 'r', encoding='utf-8') as f:
+        return json.load(f)
 
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+from nlp_agent import get_best_match
 
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+def get_answer(user_query, faq=None):
+    if faq is None:
+        faq = load_faq()
+    all_patterns = []
+    pattern_to_response = {}
+    for item in faq:
+        for pattern in item.get("patterns", []):
+            all_patterns.append(pattern)
+            pattern_to_response[pattern] = item.get("response", "")
+    best_q, score = get_best_match(user_query, all_patterns)
+    if best_q:
+        return pattern_to_response[best_q]
+    return None
 
-if prompt := st.chat_input("What is up?"):
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
 
-    with st.chat_message("assistant"):
-        message_placeholder = st.empty()
-        full_response = ""
-        for chunk in "This is a simulated response.".split():
-            full_response += chunk + " "
-            message_placeholder.markdown(full_response + "▌")
-        message_placeholder.markdown(full_response)
-    st.session_state.messages.append({"role": "assistant", "content": full_response})
