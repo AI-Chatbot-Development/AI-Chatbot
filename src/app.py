@@ -1,64 +1,130 @@
 import streamlit as st
-from chatbot import get_answer, load_faq
+from chatbot import load_faq
+from nlp_agent import get_best_match
+from database import init_db, log_interaction, log_feedback, log_escalation
 import datetime
-import os
+import uuid
 
-LOG_PATH = os.path.join(os.path.dirname(__file__), '../data/log.txt')
+# --- INITIALIZATION ---
+# Initialize database
+init_db()
 
-def log_interaction(user_input, response, match_score=None, selected=None):
-    print(f"[LOG] INPUT: {user_input} | SCORE: {match_score}")  # Log to terminal
-    with open(LOG_PATH, 'a', encoding='utf-8') as f:
-        f.write(f"{datetime.datetime.now().isoformat()} | INPUT: {user_input} | RESPONSE: {response} | SCORE: {match_score} | SELECTED: {selected}\n")
-
-st.title("Bitsy")
-
-col1, col2 = st.columns([0.85, 0.15])
-user_input = col1.text_input("Ask a question:", label_visibility="collapsed", placeholder="Ask a question...")
-send_button = col2.button("➤")
-
-
+# Load FAQ data
 faq = load_faq()
-all_patterns = []
-pattern_to_response = {}
-for item in faq:
-    patterns = item.get("patterns", [])
-    response = item.get("response", "")
-    for pattern in patterns:
-        all_patterns.append(pattern)
-        pattern_to_response[pattern] = response
+all_patterns = [pattern for item in faq for pattern in item.get("patterns", [])]
+pattern_to_response = {pattern: item.get("response", "") for item in faq for pattern in item.get("patterns", [])}
 
-if user_input or send_button:
-    from nlp_agent import get_best_match
+# --- SESSION STATE ---
+if 'session_id' not in st.session_state:
+    st.session_state.session_id = str(uuid.uuid4())
+if 'history' not in st.session_state:
+    st.session_state.history = []
+if 'user_name' not in st.session_state:
+    st.session_state.user_name = ""
 
-    with st.spinner("Searching for the best answer..."):
-        best_q, best_score = get_best_match(user_input, all_patterns)
-        if best_q and best_score >= 0.8:
-            st.success(pattern_to_response[best_q])
-            log_interaction(user_input, pattern_to_response[best_q], best_score, best_q)
+# --- UI SETUP ---
+st.title("Bitsy - The BITS College AI Assistant")
+
+# --- PERSONALIZED GREETING ---
+hour = datetime.datetime.now().hour
+greeting = "Good morning"
+if 12 <= hour < 18:
+    greeting = "Good afternoon"
+elif hour >= 18:
+    greeting = "Good evening"
+
+if not st.session_state.user_name:
+    st.session_state.user_name = st.text_input("What's your name?")
+    if st.session_state.user_name:
+        st.balloons()
+        st.success(f"Welcome, {st.session_state.user_name}!")
+
+with st.chat_message("assistant"):
+    st.write(f"{greeting}, {st.session_state.user_name}! How can I help you today?")
+
+# --- CHAT HISTORY ---
+for i, message in enumerate(st.session_state.history):
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+        if message.get("type") == "answer" and "interaction_id" in message:
+            interaction_id = message['interaction_id']
+            feedback_state_key = f"feedback_given_{interaction_id}"
+            feedback_type_key = f"feedback_type_{interaction_id}"
+            
+            if not st.session_state.get(feedback_state_key, False):
+                col1, col2, _ = st.columns([1, 1, 8])
+                if col1.button("👍", key=f"up_{interaction_id}", help="This answer was helpful"):
+                    log_feedback(interaction_id, 1)
+                    st.session_state[feedback_state_key] = True
+                    st.session_state[feedback_type_key] = "positive"
+                    st.rerun()
+                if col2.button("👎", key=f"down_{interaction_id}", help="This answer was not helpful"):
+                    log_feedback(interaction_id, -1)
+                    st.session_state[feedback_state_key] = True
+                    st.session_state[feedback_type_key] = "negative"
+                    st.rerun()
+            else:
+                feedback_type = st.session_state.get(feedback_type_key, "unknown")
+                if feedback_type == "positive":
+                    st.success("🎉 Thank you for your feedback! We're glad this was helpful.")
+                elif feedback_type == "negative":
+                    st.info("💡 Thank you for your feedback! We'll use it to improve our responses.")
+                else:
+                    st.success("✅ Thank you for your feedback!")
+
+        if message.get("type") == "options" and message.get("options") and not message.get("selection_made"):
+            options = message["options"]
+            original_prompt = st.session_state.history[i-1]['content']
+            
+            for option in options:
+                if st.button(option, key=f"option_{i}_{option}"):
+                    response = pattern_to_response[option]
+                    
+                    st.session_state.history.append({"role": "user", "content": option})
+                    interaction_id = log_interaction(st.session_state.session_id, original_prompt, response, 0.85) 
+                    st.session_state.history.append({"role": "assistant", "content": response, "type": "answer", "interaction_id": interaction_id})
+                    
+                    st.session_state.history[i]["selection_made"] = True
+                    st.rerun()
+
+            if st.button("None of these", key=f"escalate_{i}"):
+                response = "I'm sorry I couldn't help. Your query has been escalated to a human agent."
+                st.session_state.history.append({"role": "user", "content": "None of these"})
+                st.session_state.history.append({"role": "assistant", "content": response, "type": "escalated"})
+                log_escalation(original_prompt)
+                st.session_state.history[i]["selection_made"] = True
+                st.rerun()
+
+# --- CHAT INPUT ---
+if prompt := st.chat_input("Ask me anything about BITS College..."):
+    st.session_state.history.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    with st.spinner("Thinking..."):
+        best_q, best_score = get_best_match(prompt, all_patterns)
+
+        if best_q and best_score >= 0.75:
+            response = pattern_to_response[best_q]
+            interaction_id = log_interaction(st.session_state.session_id, prompt, response, best_score)
+            st.session_state.history.append({"role": "assistant", "content": response, "type": "answer", "interaction_id": interaction_id})
+            st.rerun()
         else:
             scored = []
-            for q in all_patterns:
-                _, score = get_best_match(user_input, [q])
-                scored.append((q, score))
+            for p in all_patterns:
+                _, score = get_best_match(prompt, [p])
+                scored.append((p, score))
+            
             scored.sort(key=lambda x: x[1], reverse=True)
-            options = [q for q, s in scored[:3]]
-            if len(options) == 1:
-                st.info(pattern_to_response[options[0]])
-                log_interaction(user_input, pattern_to_response[options[0]], best_score, options[0])
+            options = [q for q, s in scored[:3] if s > 0.5]
+
+            if options:
+                response = "I'm not sure I understood. Did you mean one of these?"
+                st.session_state.history.append({"role": "assistant", "content": response, "type": "options", "options": options})
+                st.rerun()
             else:
-                st.warning("Did you mean one of these?")
-                selected = None
-                for i, q in enumerate(options):
-                    col = st.columns(1)[0]
-                    if col.button(q, key=f"btn_{i}"):
-                        selected = q
-                col = st.columns(1)[0]
-                if col.button("Forward to support", key="btn_support"):
-                    selected = "Forward to support"
-                if selected:
-                    if selected != "Forward to support":
-                        st.info(pattern_to_response[selected])
-                        log_interaction(user_input, pattern_to_response[selected], best_score, selected)
-                    else:
-                        st.warning("This question has been forwarded to support.")
-                        log_interaction(user_input, "Forwarded to support", best_score, None)
+                response = "I'm not sure how to answer that. This query has been escalated to a human agent."
+                st.session_state.history.append({"role": "assistant", "content": response, "type": "escalated"})
+                log_escalation(prompt)
+                st.rerun()

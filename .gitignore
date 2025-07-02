@@ -139,3 +139,7 @@ venv.bak/
 
 # Docker
 .dockerignore
+
+#database
+*.sqlite3
+*.db
