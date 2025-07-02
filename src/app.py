@@ -1,14 +1,12 @@
 import streamlit as st
 from chatbot import get_answer, load_faq
-import datetime
-import os
+import uuid
+from database import init_db, log_interaction as db_log_interaction, log_escalation
 
-LOG_PATH = os.path.join(os.path.dirname(__file__), '../data/log.txt')
+init_db()
 
-def log_interaction(user_input, response, match_score=None, selected=None):
-    print(f"[LOG] INPUT: {user_input} | SCORE: {match_score}")  # Log to terminal
-    with open(LOG_PATH, 'a', encoding='utf-8') as f:
-        f.write(f"{datetime.datetime.now().isoformat()} | INPUT: {user_input} | RESPONSE: {response} | SCORE: {match_score} | SELECTED: {selected}\n")
+if 'session_id' not in st.session_state:
+    st.session_state.session_id = str(uuid.uuid4())
 
 st.title("Bitsy")
 
@@ -33,8 +31,9 @@ if user_input or send_button:
     with st.spinner("Searching for the best answer..."):
         best_q, best_score = get_best_match(user_input, all_patterns)
         if best_q and best_score >= 0.8:
-            st.success(pattern_to_response[best_q])
-            log_interaction(user_input, pattern_to_response[best_q], best_score, best_q)
+            response = pattern_to_response[best_q]
+            st.success(response)
+            db_log_interaction(st.session_state.session_id, user_input, response, best_score)
         else:
             scored = []
             for q in all_patterns:
@@ -43,8 +42,9 @@ if user_input or send_button:
             scored.sort(key=lambda x: x[1], reverse=True)
             options = [q for q, s in scored[:3]]
             if len(options) == 1:
-                st.info(pattern_to_response[options[0]])
-                log_interaction(user_input, pattern_to_response[options[0]], best_score, options[0])
+                response = pattern_to_response[options[0]]
+                st.info(response)
+                db_log_interaction(st.session_state.session_id, user_input, response, best_score)
             else:
                 st.warning("Did you mean one of these?")
                 selected = None
@@ -57,8 +57,9 @@ if user_input or send_button:
                     selected = "Forward to support"
                 if selected:
                     if selected != "Forward to support":
-                        st.info(pattern_to_response[selected])
-                        log_interaction(user_input, pattern_to_response[selected], best_score, selected)
+                        response = pattern_to_response[selected]
+                        st.info(response)
+                        db_log_interaction(st.session_state.session_id, user_input, response, best_score)
                     else:
                         st.warning("This question has been forwarded to support.")
-                        log_interaction(user_input, "Forwarded to support", best_score, None)
+                        log_escalation(user_input)
