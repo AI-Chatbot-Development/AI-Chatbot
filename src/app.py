@@ -21,8 +21,6 @@ if 'history' not in st.session_state:
     st.session_state.history = []
 if 'user_name' not in st.session_state:
     st.session_state.user_name = ""
-if 'chat_input' not in st.session_state:
-    st.session_state.chat_input = ""
 if 'pending_suggestion' not in st.session_state:
     st.session_state.pending_suggestion = None
 
@@ -38,13 +36,13 @@ with st.sidebar:
 
     st.subheader("🚀 Quick Actions")
     if st.button("📋 Course Registration"):
-        st.session_state.chat_input = "How do I register for classes?"
+        st.session_state.pending_suggestion = "How do I register for classes?"
     if st.button("📊 Check Attendance Policy"):
-        st.session_state.chat_input = "What is the attendance requirement?"
+        st.session_state.pending_suggestion = "What is the attendance requirement?"
     if st.button("💰 Payment Information"):
-        st.session_state.chat_input = "Can I pay tuition in installments?"
+        st.session_state.pending_suggestion = "Can I pay tuition in installments?"
     if st.button("📜 Get Transcript"):
-        st.session_state.chat_input = "How do I get my transcript?"
+        st.session_state.pending_suggestion = "How do I get my transcript?"
 
     st.subheader("📋 Common Topics")
     for topic in [
@@ -102,46 +100,128 @@ if st.session_state.user_name:
             "Can I pay tuition in installments?"
         ]):
             if st.button(suggestion, key=f"suggestion_{i}"):
-                st.session_state.chat_input = suggestion
+                st.session_state.pending_suggestion = suggestion
 
 # --- CHAT HISTORY ---
-st.markdown('<div style="max-height: 600px; overflow-y:auto; border:1px solid #d0d5db; border-radius:12px; padding:1rem; background-color:#f9fafb;">', unsafe_allow_html=True)
-for message in st.session_state.history:
+for i, message in enumerate(st.session_state.history):
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
-st.markdown('</div>', unsafe_allow_html=True)
 
-# --- CHAT INPUT + RESPONSE HANDLER ---
-if st.session_state.chat_input:
-    user_input = st.session_state.chat_input
-    st.session_state.chat_input = ""  # Clear it after use
+        # Handle feedback for answers
+        if message.get("type") == "answer" and "interaction_id" in message:
+            interaction_id = message['interaction_id']
+            feedback_state_key = f"feedback_given_{interaction_id}"
+            feedback_type_key = f"feedback_type_{interaction_id}"
+            
+            if not st.session_state.get(feedback_state_key, False):
+                col1, col2, _ = st.columns([1, 1, 8])
+                if col1.button("👍", key=f"up_{interaction_id}", help="This answer was helpful"):
+                    log_feedback(interaction_id, 1)
+                    st.session_state[feedback_state_key] = True
+                    st.session_state[feedback_type_key] = "positive"
+                    st.rerun()
+                if col2.button("👎", key=f"down_{interaction_id}", help="This answer was not helpful"):
+                    log_feedback(interaction_id, -1)
+                    st.session_state[feedback_state_key] = True
+                    st.session_state[feedback_type_key] = "negative"
+                    st.rerun()
+            else:
+                feedback_type = st.session_state.get(feedback_type_key, "unknown")
+                if feedback_type == "positive":
+                    st.success("🎉 Thank you for your feedback! We're glad this was helpful.")
+                elif feedback_type == "negative":
+                    st.info("💡 Thank you for your feedback! We'll use it to improve our responses.")
 
-    st.session_state.history.append({"role": "user", "content": user_input})
+        # Handle multiple choice options
+        if message.get("type") == "options" and message.get("options") and not message.get("selection_made"):
+            options = message["options"]
+            original_prompt = st.session_state.history[i-1]['content']
+            
+            for option in options:
+                if st.button(option, key=f"option_{i}_{option}"):
+                    response = pattern_to_response[option]
+                    
+                    st.session_state.history.append({"role": "user", "content": option})
+                    interaction_id = log_interaction(st.session_state.session_id, original_prompt, response, 0.85) 
+                    st.session_state.history.append({"role": "assistant", "content": response, "type": "answer", "interaction_id": interaction_id})
+                    
+                    st.session_state.history[i]["selection_made"] = True
+                    st.rerun()
 
-    # Typing animation
-    placeholder = st.empty()
-    placeholder.markdown("**Bot:** _Typing..._")
-    time.sleep(1.5)
+            if st.button("None of these", key=f"escalate_{i}"):
+                response = "I'm sorry I couldn't help. Your query has been escalated to a human agent."
+                st.session_state.history.append({"role": "user", "content": "None of these"})
+                st.session_state.history.append({"role": "assistant", "content": response, "type": "escalated"})
+                log_escalation(original_prompt)
+                st.session_state.history[i]["selection_made"] = True
+                st.rerun()
 
-    best_q, best_score = get_best_match(user_input, all_patterns)
+# --- HANDLE PENDING SUGGESTIONS ---
+if st.session_state.pending_suggestion:
+    prompt = st.session_state.pending_suggestion
+    st.session_state.pending_suggestion = None
+    
+    # Add user message
+    st.session_state.history.append({"role": "user", "content": prompt})
+    
+    with st.spinner("Thinking..."):
+        best_q, best_score = get_best_match(prompt, all_patterns)
 
-    if best_q and best_score >= 0.75:
-        response = pattern_to_response[best_q]
-        interaction_id = log_interaction(st.session_state.session_id, user_input, response, best_score)
-        st.session_state.history.append({
-            "role": "assistant",
-            "content": response,
-            "type": "answer",
-            "interaction_id": interaction_id
-        })
-    else:
-        response = "Sorry, I don't have an answer for that. I've escalated your question to a human staff member."
-        log_escalation(user_input)
-        st.session_state.history.append({"role": "assistant", "content": response, "type": "escalated"})
+        if best_q and best_score >= 0.75:
+            response = pattern_to_response[best_q]
+            interaction_id = log_interaction(st.session_state.session_id, prompt, response, best_score)
+            st.session_state.history.append({"role": "assistant", "content": response, "type": "answer", "interaction_id": interaction_id})
+        else:
+            # Generate options for unclear queries
+            scored = []
+            for p in all_patterns:
+                _, score = get_best_match(prompt, [p])
+                scored.append((p, score))
+            
+            scored.sort(key=lambda x: x[1], reverse=True)
+            options = [q for q, s in scored[:3] if s > 0.5]
 
-    placeholder.empty()
+            if options:
+                response = "I'm not sure I understood. Did you mean one of these?"
+                st.session_state.history.append({"role": "assistant", "content": response, "type": "options", "options": options})
+            else:
+                response = "I'm not sure how to answer that. This query has been escalated to a human agent."
+                st.session_state.history.append({"role": "assistant", "content": response, "type": "escalated"})
+                log_escalation(prompt)
+    
+    st.rerun()
 
-# Live input box
-chat_typed = st.chat_input("Ask me anything about BITS College...")
-if chat_typed:
-    st.session_state.chat_input = chat_typed
+# --- CHAT INPUT ---
+if prompt := st.chat_input("Ask me anything about BITS College..."):
+    # Add user message
+    st.session_state.history.append({"role": "user", "content": prompt})
+    
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    with st.spinner("Thinking..."):
+        best_q, best_score = get_best_match(prompt, all_patterns)
+
+        if best_q and best_score >= 0.75:
+            response = pattern_to_response[best_q]
+            interaction_id = log_interaction(st.session_state.session_id, prompt, response, best_score)
+            st.session_state.history.append({"role": "assistant", "content": response, "type": "answer", "interaction_id": interaction_id})
+        else:
+            # Generate options for unclear queries
+            scored = []
+            for p in all_patterns:
+                _, score = get_best_match(prompt, [p])
+                scored.append((p, score))
+            
+            scored.sort(key=lambda x: x[1], reverse=True)
+            options = [q for q, s in scored[:3] if s > 0.5]
+
+            if options:
+                response = "I'm not sure I understood. Did you mean one of these?"
+                st.session_state.history.append({"role": "assistant", "content": response, "type": "options", "options": options})
+            else:
+                response = "I'm not sure how to answer that. This query has been escalated to a human agent."
+                st.session_state.history.append({"role": "assistant", "content": response, "type": "escalated"})
+                log_escalation(prompt)
+    
+    st.rerun()
