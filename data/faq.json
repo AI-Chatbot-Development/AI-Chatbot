@@ -1,0 +1,35 @@
+[
+    {
+        "intent": "register_classes",
+        "patterns": [
+            "How do I register for classes?",
+            "Where do I go to register for my courses?",
+            "What is the procedure for class registration?",
+            "Can I register online?",
+            "When does registration start?"
+        ],
+        "response": "Students must register at the beginning of each semester by filling in the official online registration slip and receiving approval from their academic advisor. Registration is completed upon payment and approval by the College registrar. Attending class without completing registration is not permitted."
+    },
+    {
+        "intent": "class_attendance_policy",
+        "patterns": [
+            "What is the attendance requirement for classes?",
+            "Can I miss classes?",
+            "What happens if I have low attendance?",
+            "Is attendance compulsory at BITS College?",
+            "Do I get penalized for missing classes?"
+        ],
+        "response": "Students are required to attend all lecture, lab, and practical sessions. A minimum of 85% attendance is required to earn credit. If attendance falls below this, the student may receive an 'IA' (Incomplete Attendance) grade, which can become an 'F' if no valid reason is provided within the required timeframe."
+    },
+    {
+        "intent": "tuition_payment_installments",
+        "patterns": [
+            "Can I pay my tuition in installments?",
+            "Is it possible to split my tuition fee?",
+            "How many installments are allowed for tuition payment?",
+            "When is the second installment due?",
+            "Do I need to pay full tuition upfront?"
+        ],
+        "response": "Students can pay tuition fees in two installments. The first is due at registration, and the second during the 7th–8th week of the semester. Only students who have completed the first semester with full payment are eligible for this option. Late payments incur a 100 birr daily penalty."
+    }
+]
