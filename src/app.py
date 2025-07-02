@@ -48,14 +48,30 @@ for i, message in enumerate(st.session_state.history):
         st.markdown(message["content"])
 
         if message.get("type") == "answer" and "interaction_id" in message:
-            feedback_key = f"feedback_{message['interaction_id']}"
-            col1, col2 = st.columns(2)
-            if col1.button("👍", key=f"up_{feedback_key}"):
-                log_feedback(message["interaction_id"], 1)
-                st.success("Thanks for your feedback!")
-            if col2.button("👎", key=f"down_{feedback_key}"):
-                log_feedback(message["interaction_id"], -1)
-                st.error("We'll use your feedback to improve.")
+            interaction_id = message['interaction_id']
+            feedback_state_key = f"feedback_given_{interaction_id}"
+            feedback_type_key = f"feedback_type_{interaction_id}"
+            
+            if not st.session_state.get(feedback_state_key, False):
+                col1, col2, _ = st.columns([1, 1, 8])
+                if col1.button("👍", key=f"up_{interaction_id}", help="This answer was helpful"):
+                    log_feedback(interaction_id, 1)
+                    st.session_state[feedback_state_key] = True
+                    st.session_state[feedback_type_key] = "positive"
+                    st.rerun()
+                if col2.button("👎", key=f"down_{interaction_id}", help="This answer was not helpful"):
+                    log_feedback(interaction_id, -1)
+                    st.session_state[feedback_state_key] = True
+                    st.session_state[feedback_type_key] = "negative"
+                    st.rerun()
+            else:
+                feedback_type = st.session_state.get(feedback_type_key, "unknown")
+                if feedback_type == "positive":
+                    st.success("🎉 Thank you for your feedback! We're glad this was helpful.")
+                elif feedback_type == "negative":
+                    st.info("💡 Thank you for your feedback! We'll use it to improve our responses.")
+                else:
+                    st.success("✅ Thank you for your feedback!")
 
         if message.get("type") == "options" and message.get("options") and not message.get("selection_made"):
             options = message["options"]
