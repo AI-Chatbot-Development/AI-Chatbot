@@ -1,7 +1,13 @@
 [
   {
     "intent": "greeting",
-    "patterns": ["hi", "hello", "hey", "helo", "hii"],
+    "patterns": [
+      "hi",
+      "hello",
+      "hey",
+      "helo",
+      "hii"
+    ],
     "response": "Hi, I am a chatbot designed to help with BITS College policies and procedures. How can I assist you today?"
   },
   {
@@ -80,5 +86,93 @@
       "How long does it take to get a transcript?"
     ],
     "response": "Transcripts can be requested from the Registrar’s Office. Students can request student copies or official copies, which are sealed and sent directly to institutions. Processing time is three days for regular service and one day for express service. Clearance must be completed before issuance."
+  },
+  {
+    "intent": "internship_requirement",
+    "patterns": [
+      "Is internship mandatory?",
+      "Do I need to complete an internship?",
+      "When do I take my internship?",
+      "What is the internship requirement?",
+      "Is internship graded?"
+    ],
+    "response": "Internship is a compulsory component at BITS College. Students are expected to complete at least one internship during their summer breaks. It is not credit-bearing but graded as Pass or Fail and must be documented with a written summary of the experience."
+  },
+  {
+    "intent": "community_service_requirement",
+    "patterns": [
+      "Is community service required?",
+      "How many hours of community service do I need?",
+      "What does the community service involve?",
+      "Do I get credit for community service?",
+      "Where do I complete community service?"
+    ],
+    "response": "Students are required to complete a minimum of 24 hours of community service during their academic program. A certificate of appreciation is awarded upon completion. The service must align with guidelines provided by the College."
+  },
+  {
+    "intent": "graduation_requirements",
+    "patterns": [
+      "What are the requirements to graduate?",
+      "How do I qualify for graduation?",
+      "What GPA do I need to graduate?",
+      "Do I need to pass all courses to graduate?",
+      "Can I graduate with a D grade?"
+    ],
+    "response": "To graduate, students must pass all compulsory courses and at least 9 credit hours of electives with a cumulative GPA of 2.0 or higher. A grade of at least C is required in all courses unless the student is in good standing, in which case one D may be tolerated."
+  },
+  {
+    "intent": "student_id_card",
+    "patterns": [
+      "How do I get a student ID card?",
+      "What if I lose my ID card?",
+      "Is the student ID card required?",
+      "Where do I get a replacement ID card?",
+      "Do I need to renew my ID card?"
+    ],
+    "response": "Students receive a non-transferable ID card upon registration. It must be renewed each academic year and returned upon graduation or withdrawal. Lost cards must be reported immediately. A replacement is issued by the Registrar after verification and payment of a nominal fee."
+  },
+  {
+    "intent": "late_payment_penalty",
+    "patterns": [
+      "What happens if I pay tuition late?",
+      "Is there a late fee for tuition?",
+      "What are the consequences of late payment?",
+      "Do I lose services if I don’t pay on time?",
+      "Can I still access the portal if I owe fees?"
+    ],
+    "response": "A penalty of 100 birr per day applies for late payments. Students who do not pay on time may have their services withdrawn, including access to the library, internet, email, transcripts, and exam results. Continued failure to pay may result in 'deemed withdrawn' status."
+  },
+  {
+    "intent": "orientation_program",
+    "patterns": [
+      "Is there an orientation for new students?",
+      "What happens during orientation?",
+      "Do I need to attend orientation?",
+      "What is covered in student orientation?",
+      "When is orientation held?"
+    ],
+    "response": "Orientation is provided before classes begin and includes information on academic policies, student services, social integration, and expectations. It helps new students transition from high school to college and prepares them for academic success at BITS College."
+  },
+  {
+    "intent": "transfer_program_policy",
+    "patterns": [
+      "Can I transfer to another program?",
+      "How do I switch programs?",
+      "What are the requirements for program transfer?",
+      "Is it possible to change my major?",
+      "Can I transfer after completing one year?"
+    ],
+    "response": "Students may transfer to another program if they provide valid reasons, meet the admission criteria for the new program, obtain approval from CAARC, and have completed no more than 50% of the original program. Credit transfers are subject to evaluation by the receiving unit."
+  },
+  {
+    "intent": "withdrawal_and_readmission",
+    "patterns": [
+      "How do I withdraw from the college?",
+      "What is the readmission process?",
+      "Can I return after withdrawing?",
+      "What is the deadline for withdrawal?",
+      "What if I left due to medical reasons?"
+    ],
+    "response": "Withdrawal must be processed through official forms submitted within 30 days of discontinuation. Readmission is possible within four years if the withdrawal was approved for valid reasons. CAARC evaluates all readmission requests based on academic standing and availability of space."
   }
 ]
