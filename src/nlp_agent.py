@@ -31,3 +31,17 @@ def get_best_match(user_query, questions, threshold=0.8):
     if best_score >= threshold:
         return best_question, best_score
     return None, best_score
+
+def get_all_matches(user_query, questions):
+    user_doc = nlp(preprocess(user_query))
+    matches = []
+    for question in questions:
+        faq_doc = nlp(preprocess(question))
+        sim_score = user_doc.similarity(faq_doc)
+        overlap_score = token_overlap(user_query, question)
+        fuzzy_score = SequenceMatcher(None, user_query.lower(), question.lower()).ratio()
+        score = (sim_score + overlap_score + fuzzy_score) / 3
+        matches.append((question, score))
+    
+    matches.sort(key=lambda x: x[1], reverse=True)
+    return matches
