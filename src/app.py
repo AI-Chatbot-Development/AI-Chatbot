@@ -98,19 +98,44 @@ button:hover, .stButton>button:hover {
 
 # --- SIDEBAR: Quick Help + Info ---
 with st.sidebar:
-    st.header("ℹ️ About Bitsy")
-    st.markdown("""
-    **Bitsy** is your AI-powered college assistant 🤖.
+    st.header("📚 Quick Help")
 
-    You can:
-    - Ask academic or admin questions
-    - Get instant answers from FAQs
-    - Provide feedback 👍👎
-    - Escalate issues to staff
+    # Quick action buttons to pre-fill common questions
+  
+    if st.button("📋 Course Registration"):
+        st.session_state['chat_input'] = "How do I register for classes?"
+    if st.button("📊  Attendance Policy"):
+        st.session_state['chat_input'] = "What is the attendance requirement?"
+    if st.button("💰 Payment Information"):
+        st.session_state['chat_input'] = "Can I pay tuition in installments?"
+    if st.button("📜 Get Transcript"):
+        st.session_state['chat_input'] = "How do I get my transcript?"
 
-    ---
-    🏫 _BITS College AI Project_
-    """)
+    # Common FAQ topics listed as text
+    st.subheader("📋 Common Topics")
+    topics = [
+        "Class Registration",
+        "Attendance Policy",
+        "Tuition Payment",
+        "Academic Advising",
+        "Course Exemptions",
+        "Transcripts"
+    ]
+    for topic in topics:
+        st.write(f"• {topic}")
+
+    # Contact info for human help
+    st.subheader("📞 Need Human Help?")
+    st.info(
+        "📧 Email: registrar@bits.edu.et\n"
+        "📱 Phone: +251-11-000-0000\n"
+        "🕒 Office Hours: 8AM-5PM"
+    )
+
+    # Chat statistics example (replace with dynamic value if available)
+    if 'history' in st.session_state and st.session_state.history:
+        st.subheader("📈 Chat Stats")
+        st.metric("Messages", len(st.session_state.history))
 
 # --- INITIALIZATION ---
 init_db()
