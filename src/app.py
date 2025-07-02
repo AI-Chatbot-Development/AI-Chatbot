@@ -14,6 +14,393 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Custom CSS with college brand color #7EC143 - Light/Dark Mode Compatible
+st.markdown("""
+<style>
+/* Main gradient background - Auto-adapts to theme */
+.main > div {
+    background: var(--background-color);
+    color: var(--text-color);
+    transition: all 0.3s ease;
+}
+
+/* CSS Variables for theme adaptation */
+:root {
+    --background-color: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    --text-color: #212529;
+    --card-background: #ffffff;
+    --border-color: #dee2e6;
+    --sidebar-background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+    --sidebar-text: #495057;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --background-color: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        --text-color: #ffffff;
+        --card-background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+        --border-color: #4a5568;
+        --sidebar-background: linear-gradient(180deg, #2d3748 0%, #1a202c 100%);
+        --sidebar-text: #ffffff;
+    }
+}
+
+/* Header with brand color gradient */
+.main-header {
+    background: linear-gradient(135deg, #7EC143 0%, #5a9b32 50%, #4a7c28 100%);
+    padding: 1.5rem;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+    text-align: center;
+    color: white;
+    box-shadow: 0 8px 25px rgba(126, 193, 67, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.main-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(180deg); }
+}
+
+.main-header h1 {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 700;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    position: relative;
+    z-index: 1;
+}
+
+.main-header p {
+    margin: 0.5rem 0 0;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 1rem;
+    opacity: 0.9;
+    position: relative;
+    z-index: 1;
+}
+
+/* Sidebar styling - Theme adaptive */
+.css-1d391kg {
+    background: var(--sidebar-background) !important;
+}
+
+.sidebar .sidebar-content {
+    background: var(--sidebar-background) !important;
+    color: var(--sidebar-text) !important;
+}
+
+/* Sidebar content styling */
+section[data-testid="stSidebar"] {
+    background: var(--sidebar-background) !important;
+}
+
+section[data-testid="stSidebar"] > div {
+    background: var(--sidebar-background) !important;
+    color: var(--sidebar-text) !important;
+}
+
+/* Sidebar text elements */
+section[data-testid="stSidebar"] .stMarkdown {
+    color: var(--sidebar-text) !important;
+}
+
+section[data-testid="stSidebar"] h2, 
+section[data-testid="stSidebar"] h3 {
+    color: #7EC143 !important;
+    font-weight: 600;
+}
+
+section[data-testid="stSidebar"] p,
+section[data-testid="stSidebar"] div {
+    color: var(--sidebar-text) !important;
+}
+
+/* Chat input styling - Theme adaptive */
+.stChatFloatingInputContainer {
+    bottom: 1rem;
+    max-width: 65%;
+    margin: 0 auto;
+}
+
+.stChatInputContainer > div {
+    border-radius: 25px !important;
+    border: 2px solid #7EC143 !important;
+    background: var(--card-background) !important;
+    box-shadow: 0 4px 15px rgba(126, 193, 67, 0.2) !important;
+    transition: all 0.3s ease !important;
+}
+
+.stChatInputContainer > div:hover {
+    box-shadow: 0 6px 20px rgba(126, 193, 67, 0.3) !important;
+    transform: translateY(-1px);
+}
+
+.stChatInputContainer input {
+    border: none !important;
+    background-color: transparent !important;
+    font-size: 14px !important;
+    padding: 12px 20px !important;
+    color: var(--text-color) !important;
+}
+
+.stChatInputContainer input:focus {
+    box-shadow: 0 0 0 2px rgba(126, 193, 67, 0.4) !important;
+    border-color: #7EC143 !important;
+}
+
+.stChatInputContainer input::placeholder {
+    color: #6c757d !important;
+    font-style: italic;
+}
+
+/* Send button styling */
+.stChatInputContainer button {
+    background: linear-gradient(135deg, #7EC143 0%, #6bb032 100%) !important;
+    border: none !important;
+    border-radius: 50% !important;
+    width: 40px !important;
+    height: 40px !important;
+    margin-right: 8px !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 3px 10px rgba(126, 193, 67, 0.4) !important;
+}
+
+.stChatInputContainer button:hover {
+    background: linear-gradient(135deg, #6bb032 0%, #5a9b32 100%) !important;
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(126, 193, 67, 0.6) !important;
+}
+
+/* Chat messages styling - Theme adaptive */
+.stChatMessage {
+    background: var(--card-background) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 12px !important;
+    padding: 1rem !important;
+    margin: 0.5rem 0 !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+    color: var(--text-color) !important;
+}
+
+.stChatMessage [data-testid="stMarkdownContainer"] {
+    color: var(--text-color) !important;
+}
+
+.stChatMessage [data-testid="stMarkdownContainer"] p {
+    color: var(--text-color) !important;
+}
+
+/* Sidebar buttons - Theme adaptive */
+section[data-testid="stSidebar"] .stButton > button {
+    background: linear-gradient(135deg, #7EC143 0%, #6bb032 100%) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 12px !important;
+    padding: 0.5rem 1rem !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 2px 8px rgba(126, 193, 67, 0.3) !important;
+    width: 100% !important;
+    margin-bottom: 0.5rem !important;
+}
+
+section[data-testid="stSidebar"] .stButton > button:hover {
+    background: linear-gradient(135deg, #6bb032 0%, #5a9b32 100%) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(126, 193, 67, 0.4) !important;
+}
+
+/* Main content buttons */
+.stButton > button {
+    background: linear-gradient(135deg, #7EC143 0%, #6bb032 100%) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 15px !important;
+    padding: 0.5rem 1rem !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 2px 8px rgba(126, 193, 67, 0.3) !important;
+}
+
+.stButton > button:hover {
+    background: linear-gradient(135deg, #6bb032 0%, #5a9b32 100%) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(126, 193, 67, 0.4) !important;
+}
+
+/* Success and info messages - Theme adaptive */
+.stSuccess {
+    background: linear-gradient(135deg, #7EC143 0%, #6bb032 100%) !important;
+    color: white !important;
+    border-radius: 8px !important;
+    border: none !important;
+}
+
+.stInfo {
+    background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%) !important;
+    color: white !important;
+    border-radius: 8px !important;
+    border: none !important;
+}
+
+/* Modern greeting section - Theme adaptive */
+.greeting-container {
+    background: var(--card-background);
+    border-radius: 12px;
+    padding: 1rem;
+    margin: 1rem 0;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border: 2px solid #7EC143;
+    text-align: center;
+}
+
+.greeting-container h3 {
+    color: #7EC143 !important;
+    margin-bottom: 0.5rem !important;
+    font-size: 1.2rem !important;
+}
+
+/* Spinner customization */
+.stSpinner > div {
+    border-top-color: #7EC143 !important;
+}
+
+/* Modern Chat Stats styling - Theme adaptive */
+.metric-container {
+    background: var(--card-background) !important;
+    border: 2px solid #7EC143 !important;
+    border-radius: 16px !important;
+    padding: 1.5rem 1rem !important;
+    text-align: center !important;
+    box-shadow: 0 6px 20px rgba(126, 193, 67, 0.15) !important;
+    position: relative !important;
+    overflow: hidden !important;
+    transition: all 0.3s ease !important;
+}
+
+.metric-container::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 4px !important;
+    background: linear-gradient(90deg, #7EC143 0%, #6bb032 50%, #7EC143 100%) !important;
+}
+
+.metric-container:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 25px rgba(126, 193, 67, 0.25) !important;
+}
+
+.metric-container h3 {
+    color: #7EC143 !important;
+    margin: 0 !important;
+    font-size: 2.5rem !important;
+    font-weight: 800 !important;
+    letter-spacing: -1px !important;
+    line-height: 1 !important;
+    text-shadow: none !important;
+}
+
+.metric-container p {
+    color: var(--sidebar-text) !important;
+    margin: 0.5rem 0 0 0 !important;
+    opacity: 0.8 !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    text-shadow: none !important;
+}
+
+/* Text input styling - Theme adaptive */
+.stTextInput > div > div > input {
+    background-color: var(--card-background) !important;
+    color: var(--text-color) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 8px !important;
+}
+
+.stTextInput > div > div > input:focus {
+    border-color: #7EC143 !important;
+    box-shadow: 0 0 0 1px #7EC143 !important;
+}
+
+/* Fix for general text visibility - Theme adaptive */
+.main .block-container {
+    color: var(--text-color);
+}
+
+/* Ensure proper text color inheritance */
+p, span, div {
+    color: inherit !important;
+}
+
+.stMarkdown {
+    color: var(--text-color) !important;
+}
+
+.stWrite {
+    color: var(--text-color) !important;
+}
+
+/* Sidebar info box styling */
+section[data-testid="stSidebar"] .stInfo {
+    background: linear-gradient(135deg, #7EC143 0%, #6bb032 100%) !important;
+    color: white !important;
+    border-radius: 8px !important;
+    border: none !important;
+}
+
+/* Ensure sidebar elements are visible in both themes */
+section[data-testid="stSidebar"] * {
+    color: var(--sidebar-text) !important;
+}
+
+section[data-testid="stSidebar"] h1,
+section[data-testid="stSidebar"] h2,
+section[data-testid="stSidebar"] h3,
+section[data-testid="stSidebar"] h4 {
+    color: #7EC143 !important;
+}
+
+/* Light mode specific adjustments */
+@media (prefers-color-scheme: light) {
+    .stChatMessage {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+    }
+    
+    .greeting-container {
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+}
+
+/* Dark mode specific adjustments */
+@media (prefers-color-scheme: dark) {
+    .stChatMessage {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+    }
+    
+    .greeting-container {
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+}
+</style>
+""", unsafe_allow_html=True)
+
 # --- SESSION STATE ---
 if 'session_id' not in st.session_state:
     st.session_state.session_id = str(uuid.uuid4())
@@ -32,53 +419,59 @@ pattern_to_response = {pattern: item.get("response", "") for item in faq for pat
 
 # --- SIDEBAR ---
 with st.sidebar:
-    st.header("📚 Quick Help")
+    st.markdown("## 📚 Quick Help")
 
-    st.subheader("🚀 Quick Actions")
-    if st.button("📋 Course Registration"):
+    st.markdown("### 🚀 Quick Actions")
+    if st.button("📋 Course Registration", key="reg_btn"):
         st.session_state.pending_suggestion = "How do I register for classes?"
-    if st.button("📊 Check Attendance Policy"):
+    if st.button("📊 Check Attendance Policy", key="attend_btn"):
         st.session_state.pending_suggestion = "What is the attendance requirement?"
-    if st.button("💰 Payment Information"):
+    if st.button("💰 Payment Information", key="pay_btn"):
         st.session_state.pending_suggestion = "Can I pay tuition in installments?"
-    if st.button("📜 Get Transcript"):
+    if st.button("📜 Get Transcript", key="trans_btn"):
         st.session_state.pending_suggestion = "How do I get my transcript?"
 
-    st.subheader("📋 Common Topics")
+    st.markdown("### 📋 Common Topics")
     for topic in [
         "Class Registration", "Attendance Policy", "Tuition Payment",
         "Academic Advising", "Course Exemptions", "Transcripts"
     ]:
-        st.write(f"• {topic}")
+        st.markdown(f"• {topic}")
 
-    st.subheader("📞 Need Human Help?")
+    st.markdown("### 📞 Need Human Help?")
     st.info(
-        "📧 Email: registrar@bits.edu.et\n"
-        "📱 Phone: +251-11-xxx-xxxx\n"
-        "🕒 Office Hours: 8AM-5PM"
+        "📧 **Email:** registrar@bits.edu.et\n\n"
+        "📱 **Phone:** +251-11-xxx-xxxx\n\n"
+        "🕒 **Office Hours:** 8AM-5PM"
     )
 
     if st.session_state.history:
-        st.subheader("📈 Chat Stats")
-        st.metric("Messages", len(st.session_state.history))
+        st.markdown("### 📈 Chat Stats")
+        st.markdown(f"""
+        <div class="metric-container">
+            <h3>{len(st.session_state.history)}</h3>
+            <p>Messages Exchanged</p>
+        </div>
+        """, unsafe_allow_html=True)
 
 # --- HEADER ---
 st.markdown("""
-<div style="background: linear-gradient(90deg, #4a525b 0%, #7dc53f 100%);
-            padding: 1rem; border-radius: 10px; margin-bottom: 2rem; text-align:center; color:white;">
-    <h1 style="margin:0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">🎓 Bitsy - BITS College AI Assistant</h1>
-    <p style="margin:0.2rem 0 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-        Your intelligent companion for college queries and support
-    </p>
+<div class="main-header">
+    <h1>🎓 Bitsy - BITS College AI Assistant</h1>
+    <p>Your intelligent companion for college queries and support</p>
 </div>
 """, unsafe_allow_html=True)
 
-# --- CENTER GREETING UI ---
+# --- CENTER GREETING UI - Modern and compact ---
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
     if not st.session_state.user_name:
-        st.markdown("### 👋 Let's get started!")
-        name_input = st.text_input("What should I call you?", placeholder="Enter your name here...")
+        st.markdown("""
+        <div class="greeting-container">
+            <h3>👋 Let's get started!</h3>
+        </div>
+        """, unsafe_allow_html=True)
+        name_input = st.text_input("", placeholder="What should I call you?")
         if name_input:
             st.session_state.user_name = name_input
             st.balloons()
@@ -94,13 +487,16 @@ if st.session_state.user_name:
 
     if not st.session_state.history:
         st.write("Here are some things you can ask me:")
-        for i, suggestion in enumerate([
+        cols = st.columns(3)
+        suggestions = [
             "How do I register for classes?",
-            "What's the attendance policy?",
+            "What's the attendance policy?", 
             "Can I pay tuition in installments?"
-        ]):
-            if st.button(suggestion, key=f"suggestion_{i}"):
-                st.session_state.pending_suggestion = suggestion
+        ]
+        for i, suggestion in enumerate(suggestions):
+            with cols[i]:
+                if st.button(suggestion, key=f"suggestion_{i}"):
+                    st.session_state.pending_suggestion = suggestion
 
 # --- CHAT HISTORY ---
 for i, message in enumerate(st.session_state.history):
@@ -164,7 +560,7 @@ if st.session_state.pending_suggestion:
     # Add user message
     st.session_state.history.append({"role": "user", "content": prompt})
     
-    with st.spinner("Thinking..."):
+    with st.spinner("🤔 Thinking..."):
         best_q, best_score = get_best_match(prompt, all_patterns)
 
         if best_q and best_score >= 0.75:
@@ -192,14 +588,14 @@ if st.session_state.pending_suggestion:
     st.rerun()
 
 # --- CHAT INPUT ---
-if prompt := st.chat_input("Ask me anything about BITS College..."):
+if prompt := st.chat_input("💬 Ask me anything about BITS College..."):
     # Add user message
     st.session_state.history.append({"role": "user", "content": prompt})
     
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    with st.spinner("Thinking..."):
+    with st.spinner("🤔 Thinking..."):
         best_q, best_score = get_best_match(prompt, all_patterns)
 
         if best_q and best_score >= 0.75:
