@@ -1,4 +1,5 @@
 import spacy
+from difflib import SequenceMatcher
 
 try:
     nlp = spacy.load("en_core_web_md")
@@ -22,7 +23,8 @@ def get_best_match(user_query, questions, threshold=0.8):
         faq_doc = nlp(preprocess(question))
         sim_score = user_doc.similarity(faq_doc)
         overlap_score = token_overlap(user_query, question)
-        score = (sim_score + overlap_score) / 2
+        fuzzy_score = SequenceMatcher(None, user_query.lower(), question.lower()).ratio()
+        score = (sim_score + overlap_score + fuzzy_score) / 3
         if score > best_score:
             best_score = score
             best_question = question
