@@ -1,5 +1,6 @@
 import json
 import os
+from nlp_agent import get_best_match
 
 def load_faq(path=None):
     if path is None:
@@ -7,14 +8,20 @@ def load_faq(path=None):
     with open(path, 'r', encoding='utf-8') as f:
         return json.load(f)
 
+from nlp_agent import get_best_match
+
 def get_answer(user_query, faq=None):
     if faq is None:
         faq = load_faq()
+    all_patterns = []
+    pattern_to_response = {}
     for item in faq:
-        patterns = item.get("patterns", [])
-        response = item.get("response", "")
-        if user_query.lower() in [pattern.lower() for pattern in patterns]:
-            return response
-    return "Sorry, I couldn't find an answer to your question."
+        for pattern in item.get("patterns", []):
+            all_patterns.append(pattern)
+            pattern_to_response[pattern] = item.get("response", "")
+    best_q, score = get_best_match(user_query, all_patterns)
+    if best_q:
+        return pattern_to_response[best_q]
+    return None
 
 
