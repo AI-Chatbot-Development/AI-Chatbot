@@ -1,35 +1,84 @@
 [
-    {
-        "intent": "register_classes",
-        "patterns": [
-            "How do I register for classes?",
-            "Where do I go to register for my courses?",
-            "What is the procedure for class registration?",
-            "Can I register online?",
-            "When does registration start?"
-        ],
-        "response": "Students must register at the beginning of each semester by filling in the official online registration slip and receiving approval from their academic advisor. Registration is completed upon payment and approval by the College registrar. Attending class without completing registration is not permitted."
-    },
-    {
-        "intent": "class_attendance_policy",
-        "patterns": [
-            "What is the attendance requirement for classes?",
-            "Can I miss classes?",
-            "What happens if I have low attendance?",
-            "Is attendance compulsory at BITS College?",
-            "Do I get penalized for missing classes?"
-        ],
-        "response": "Students are required to attend all lecture, lab, and practical sessions. A minimum of 85% attendance is required to earn credit. If attendance falls below this, the student may receive an 'IA' (Incomplete Attendance) grade, which can become an 'F' if no valid reason is provided within the required timeframe."
-    },
-    {
-        "intent": "tuition_payment_installments",
-        "patterns": [
-            "Can I pay my tuition in installments?",
-            "Is it possible to split my tuition fee?",
-            "How many installments are allowed for tuition payment?",
-            "When is the second installment due?",
-            "Do I need to pay full tuition upfront?"
-        ],
-        "response": "Students can pay tuition fees in two installments. The first is due at registration, and the second during the 7th–8th week of the semester. Only students who have completed the first semester with full payment are eligible for this option. Late payments incur a 100 birr daily penalty."
-    }
+  {
+    "intent": "greeting",
+    "patterns": ["hi", "hello", "hey", "helo", "hii"],
+    "response": "Hi, I am a chatbot designed to help with BITS College policies and procedures. How can I assist you today?"
+  },
+  {
+    "intent": "register_classes",
+    "patterns": [
+      "How do I register for classes?",
+      "Where do I go to register for my courses?",
+      "What is the procedure for class registration?",
+      "Can I register online?",
+      "When does registration start?"
+    ],
+    "response": "Students must register at the beginning of each semester by filling in the official online registration slip and receiving approval from their academic advisor. Registration is completed upon payment and approval by the College registrar. Attending class without completing registration is not permitted."
+  },
+  {
+    "intent": "class_attendance_policy",
+    "patterns": [
+      "What is the attendance requirement for classes?",
+      "Can I miss classes?",
+      "What happens if I have low attendance?",
+      "Is attendance compulsory at BITS College?",
+      "Do I get penalized for missing classes?"
+    ],
+    "response": "Students are required to attend all lecture, lab, and practical sessions. A minimum of 85% attendance is required to earn credit. If attendance falls below this, the student may receive an 'IA' (Incomplete Attendance) grade, which can become an 'F' if no valid reason is provided within the required timeframe."
+  },
+  {
+    "intent": "tuition_payment_installments",
+    "patterns": [
+      "Can I pay my tuition in installments?",
+      "Is it possible to split my tuition fee?",
+      "How many installments are allowed for tuition payment?",
+      "When is the second installment due?",
+      "Do I need to pay full tuition upfront?"
+    ],
+    "response": "Students can pay tuition fees in two installments. The first is due at registration, and the second during the 7th–8th week of the semester. Only students who have completed the first semester with full payment are eligible for this option. Late payments incur a 100 birr daily penalty."
+  },
+  {
+    "intent": "academic_advising",
+    "patterns": [
+      "What is academic advising?",
+      "Do I have an academic advisor?",
+      "What does an academic advisor do?",
+      "When should I meet my advisor?",
+      "How can I get academic guidance?"
+    ],
+    "response": "Each student is assigned an academic advisor upon enrollment. Advisors assist with course selection, academic planning, monitoring progress, and understanding college policies. Students are expected to meet their advisor at least once per semester, especially during registration and academic planning periods."
+  },
+  {
+    "intent": "course_exemption_policy",
+    "patterns": [
+      "Can I get exempted from some courses?",
+      "How does course exemption work?",
+      "What if I already studied a subject?",
+      "Do previous credits count?",
+      "Is there a way to skip some courses?"
+    ],
+    "response": "Students may be exempted from core or support courses if they pass a college-set exam or have completed the course with a minimum grade of B- at another accredited institution. Exemptions do not carry credit but may be replaced with other approved courses."
+  },
+  {
+    "intent": "repeat_course_policy",
+    "patterns": [
+      "Can I repeat a failed course?",
+      "How many times can I repeat a course?",
+      "Is repeating a course allowed?",
+      "Can I improve my grade?",
+      "What if I got a D?"
+    ],
+    "response": "Students may repeat a course they failed or received a D in, subject to approval. Failed courses may be repeated twice. For courses with a D grade, repetition is allowed once and only if necessary for graduation. The final grade replaces the previous one in GPA calculations."
+  },
+  {
+    "intent": "get_transcript",
+    "patterns": [
+      "How do I get my transcript?",
+      "Can I request an official transcript?",
+      "Where can I get a copy of my grades?",
+      "What is the process for requesting transcripts?",
+      "How long does it take to get a transcript?"
+    ],
+    "response": "Transcripts can be requested from the Registrar’s Office. Students can request student copies or official copies, which are sealed and sent directly to institutions. Processing time is three days for regular service and one day for express service. Clearance must be completed before issuance."
+  }
 ]
