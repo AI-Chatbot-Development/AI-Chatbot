@@ -3,6 +3,7 @@ import datetime
 import uuid
 import time
 import os
+import json
 from chatbot import load_faq
 from nlp_agent import get_best_match
 from database import init_db, log_interaction, log_feedback, log_escalation
@@ -284,7 +285,7 @@ section[data-testid="stSidebar"] .stButton > button:hover {
 
 .greeting-container h3 {
     color: #7EC143 !important;
-    margin-bottom: 0.5rem !important;
+    margin-bottom: 0.5rem;
     font-size: 1.2rem !important;
 }
 
@@ -296,7 +297,7 @@ section[data-testid="stSidebar"] .stButton > button:hover {
 /* Modern Chat Stats styling - Theme adaptive */
 .metric-container {
     background: var(--card-background) !important;
-    border: 2px solid #7EC143 !important;
+    border: 1px solid var(--border-color) !important;
     border-radius: 16px !important;
     padding: 1.5rem 1rem !important;
     text-align: center !important;
@@ -454,12 +455,31 @@ const startRecognition = () => {
 # --- SESSION STATE ---
 if 'session_id' not in st.session_state:
     st.session_state.session_id = str(uuid.uuid4())
+if 'bookmarks' not in st.session_state:
+    st.session_state.bookmarks = []
 if 'history' not in st.session_state:
     st.session_state.history = []
 if 'user_name' not in st.session_state:
     st.session_state.user_name = ""
 if 'pending_suggestion' not in st.session_state:
     st.session_state.pending_suggestion = None
+
+# --- PERSISTENT BOOKMARK STORAGE ---
+BOOKMARKS_FILE = 'bookmarks.json'
+
+def load_bookmarks():
+    if os.path.exists(BOOKMARKS_FILE):
+        with open(BOOKMARKS_FILE, 'r') as file:
+            return json.load(file)
+    return []
+
+def save_bookmarks(bookmarks):
+    with open(BOOKMARKS_FILE, 'w') as file:
+        json.dump(bookmarks, file, indent=4)
+
+# Initialize bookmarks from file
+if not st.session_state.bookmarks:
+    st.session_state.bookmarks = load_bookmarks()
 
 # --- INIT DB & FAQ ---
 init_db()
@@ -470,6 +490,25 @@ pattern_to_response = {pattern: item.get("response", "") for item in faq for pat
 # --- SIDEBAR ---
 with st.sidebar:
     st.markdown("## 📚 Quick Help")
+
+    # Bookmarks section - only show if bookmarks exist
+    if st.session_state.bookmarks:
+        st.markdown("### 🔖 Bookmarked Answers")
+        for i, bm in enumerate(st.session_state.bookmarks):
+            col1, col2 = st.columns([4, 1])
+            with col1:
+                if st.button(f"📌 {bm['label']}", key=f"bm_view_{i}"):
+                    st.session_state.pending_suggestion = bm['query']
+            with col2:
+                if st.button("🗑️", key=f"bm_delete_{i}", help="Delete bookmark"):
+                    st.session_state.bookmarks.pop(i)
+                    save_bookmarks(st.session_state.bookmarks)
+                    st.rerun()
+
+        if st.button("🗑️ Clear All Bookmarks", key="clear_bms"):
+            st.session_state.bookmarks = []
+            save_bookmarks(st.session_state.bookmarks)
+            st.rerun()
 
     st.markdown("### 🚀 Quick Actions")
     if st.button("📋 Course Registration", key="reg_btn"):
@@ -552,6 +591,17 @@ if st.session_state.user_name:
 for i, message in enumerate(st.session_state.history):
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
+        if message["role"] == "assistant" and message.get("type") == "answer":
+            if st.button("🔖 Bookmark", key=f"bookmark_{i}"):
+                user_msg = st.session_state.history[i-1]["content"] if i > 0 else "Query"
+                st.session_state.bookmarks.append({
+                    "query": user_msg,
+                    "label": user_msg[:40] + ("..." if len(user_msg) > 40 else ""),
+                    "answer": message["content"],
+                    "timestamp": datetime.datetime.now().isoformat()
+                })
+                save_bookmarks(st.session_state.bookmarks)
+                st.success("🔖 Bookmarked!")
 
         # Display audio for assistant responses
         if message["role"] == "assistant" and message.get("type") == "answer" and "audio_file" in message:
@@ -565,16 +615,18 @@ for i, message in enumerate(st.session_state.history):
             
             if not st.session_state.get(feedback_state_key, False):
                 col1, col2, _ = st.columns([1, 1, 8])
-                if col1.button("👍", key=f"up_{interaction_id}", help="This answer was helpful"):
-                    log_feedback(interaction_id, 1)
-                    st.session_state[feedback_state_key] = True
-                    st.session_state[feedback_type_key] = "positive"
-                    st.rerun()
-                if col2.button("👎", key=f"down_{interaction_id}", help="This answer was not helpful"):
-                    log_feedback(interaction_id, -1)
-                    st.session_state[feedback_state_key] = True
-                    st.session_state[feedback_type_key] = "negative"
-                    st.rerun()
+                with col1:
+                    if st.button("👍", key=f"up_{interaction_id}", help="This answer was helpful"):
+                        log_feedback(interaction_id, 1)
+                        st.session_state[feedback_state_key] = True
+                        st.session_state[feedback_type_key] = "positive"
+                        st.rerun()
+                with col2:
+                    if st.button("👎", key=f"down_{interaction_id}", help="This answer was not helpful"):
+                        log_feedback(interaction_id, -1)
+                        st.session_state[feedback_state_key] = True
+                        st.session_state[feedback_type_key] = "negative"
+                        st.rerun()
             else:
                 feedback_type = st.session_state.get(feedback_type_key, "unknown")
                 if feedback_type == "positive":
@@ -597,7 +649,7 @@ for i, message in enumerate(st.session_state.history):
                     tts.save(audio_file)
                     
                     st.session_state.history.append({"role": "user", "content": option})
-                    interaction_id = log_interaction(st.session_state.session_id, original_prompt, response, 0.85) 
+                    interaction_id = log_interaction(st.session_state.session_id, original_prompt, response, 0.85)
                     st.session_state.history.append({
                         "role": "assistant",
                         "content": response,
