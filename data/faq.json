@@ -17,7 +17,13 @@
       "Where do I go to register for my courses?",
       "What is the procedure for class registration?",
       "Can I register online?",
-      "When does registration start?"
+      "When does registration start?",
+      "class registration",
+      "registrtion process",
+      "how to register",
+      "course registration",
+      "register for course",
+      "registration procedure"
     ],
     "response": "Students must register at the beginning of each semester by filling in the official online registration slip and receiving approval from their academic advisor. Registration is completed upon payment and approval by the College registrar. Attending class without completing registration is not permitted."
   },
@@ -28,7 +34,15 @@
       "Can I miss classes?",
       "What happens if I have low attendance?",
       "Is attendance compulsory at BITS College?",
-      "Do I get penalized for missing classes?"
+      "Do I get penalized for missing classes?",
+      "is attendce mandatory",
+      "is attendance mandtory",
+      "attendance policy",
+      "attendce policy",
+      "is attendence compulsory",
+      "attendance required",
+      "minimum attendance",
+      "attendance rules"
     ],
     "response": "Students are required to attend all lecture, lab, and practical sessions. A minimum of 85% attendance is required to earn credit. If attendance falls below this, the student may receive an 'IA' (Incomplete Attendance) grade, which can become an 'F' if no valid reason is provided within the required timeframe."
   },
