@@ -680,7 +680,7 @@ if st.session_state.pending_suggestion:
     with st.spinner("🤔 Thinking..."):
         best_q, best_score = get_best_match(prompt, all_patterns)
 
-        if best_q and best_score >= 0.75:
+        if best_q and best_score >= 0.5:  # Reduced from 0.75
             response = pattern_to_response[best_q]
             # Generate audio for the response
             tts = gTTS(text=response, lang='en')
@@ -696,14 +696,13 @@ if st.session_state.pending_suggestion:
                 "audio_file": audio_file
             })
         else:
-            # Generate options for unclear queries
             scored = []
             for p in all_patterns:
                 _, score = get_best_match(prompt, [p])
                 scored.append((p, score))
             
             scored.sort(key=lambda x: x[1], reverse=True)
-            options = [q for q, s in scored[:3] if s > 0.5]
+            options = [q for q, s in scored[:3] if s > 0.3]
 
             if options:
                 response = "I'm not sure I understood. Did you mean one of these?"
@@ -738,7 +737,7 @@ if prompt:
     with st.spinner("🤔 Thinking..."):
         best_q, best_score = get_best_match(prompt, all_patterns)
 
-        if best_q and best_score >= 0.75:
+        if best_q and best_score >= 0.5:
             response = pattern_to_response[best_q]
             # Generate audio for the response
             tts = gTTS(text=response, lang='en')
@@ -754,14 +753,14 @@ if prompt:
                 "audio_file": audio_file
             })
         else:
-            # Generate options for unclear queries
+            # Generate options for unclear queries with more lenient scoring
             scored = []
             for p in all_patterns:
                 _, score = get_best_match(prompt, [p])
                 scored.append((p, score))
             
             scored.sort(key=lambda x: x[1], reverse=True)
-            options = [q for q, s in scored[:3] if s > 0.5]
+            options = [q for q, s in scored[:3] if s > 0.3] 
 
             if options:
                 response = "I'm not sure I understood. Did you mean one of these?"

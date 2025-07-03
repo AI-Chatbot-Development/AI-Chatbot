@@ -5,3 +5,11 @@ services:
       - "8501:8501"
     volumes:
       - .:/app
+
+  dashboard:
+    build: .
+    ports:
+      - "8502:8502"
+    volumes:
+      - .:/app
+    command: ["streamlit", "run", "src/dashboard.py", "--server.port=8502", "--server.address=0.0.0.0"]
