@@ -2,3 +2,5 @@ spacy
 streamlit
 pandas
 plotly
+sentence-transformers
+torch

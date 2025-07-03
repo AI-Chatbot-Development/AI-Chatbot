@@ -19,6 +19,11 @@ def get_answer(user_query, faq=None):
         for pattern in item.get("patterns", []):
             all_patterns.append(pattern)
             pattern_to_response[pattern] = item.get("response", "")
+    
+    # Check if we have any patterns to match against
+    if not all_patterns:
+        return None
+        
     best_q, score = get_best_match(user_query, all_patterns)
     if best_q:
         return pattern_to_response[best_q]
