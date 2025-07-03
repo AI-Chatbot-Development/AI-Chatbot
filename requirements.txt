@@ -1,5 +1,6 @@
 spacy
 streamlit
+gtts
 pandas
 plotly
 sentence-transformers
