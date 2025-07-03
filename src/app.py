@@ -2,9 +2,12 @@ import streamlit as st
 import datetime
 import uuid
 import time
+import os
 from chatbot import load_faq
 from nlp_agent import get_best_match
 from database import init_db, log_interaction, log_feedback, log_escalation
+from gtts import gTTS
+import base64
 
 # --- PAGE CONFIG ---
 st.set_page_config(
@@ -124,11 +127,6 @@ section[data-testid="stSidebar"] h3 {
     font-weight: 600;
 }
 
-section[data-testid="stSidebar"] p,
-section[data-testid="stSidebar"] div {
-    color: var(--sidebar-text) !important;
-}
-
 /* Chat input styling - Theme adaptive */
 .stChatFloatingInputContainer {
     bottom: 1rem;
@@ -183,6 +181,24 @@ section[data-testid="stSidebar"] div {
     background: linear-gradient(135deg, #6bb032 0%, #5a9b32 100%) !important;
     transform: scale(1.05);
     box-shadow: 0 4px 15px rgba(126, 193, 67, 0.6) !important;
+}
+
+/* Microphone button styling */
+.mic-button {
+    background: linear-gradient(135deg, #ff6b6b 0%, #e63946 100%) !important;
+    border: none !important;
+    border-radius: 50% !important;
+    width: 40px !important;
+    height: 40px !important;
+    margin-right: 8px !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 3px 10px rgba(255, 107, 107, 0.4) !important;
+}
+
+.mic-button:hover {
+    background: linear-gradient(135deg, #e63946 0%, #d32f2f 100%) !important;
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.6) !important;
 }
 
 /* Chat messages styling - Theme adaptive */
@@ -380,7 +396,7 @@ section[data-testid="stSidebar"] h4 {
 /* Light mode specific adjustments */
 @media (prefers-color-scheme: light) {
     .stChatMessage {
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+        box-shadow: 0 2px 1px rgba(0,0,0,0.08) !important;
     }
     
     .greeting-container {
@@ -399,6 +415,40 @@ section[data-testid="stSidebar"] h4 {
     }
 }
 </style>
+""", unsafe_allow_html=True)
+
+# JavaScript for Web Speech API
+st.markdown("""
+<script>
+const startRecognition = () => {
+    if (!('webkitSpeechRecognition' in window)) {
+        alert('Sorry, your browser does not support speech recognition.');
+        return;
+    }
+
+    const recognition = new webkitSpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById('speech-input').value = transcript;
+        document.getElementById('speech-input').dispatchEvent(new Event('input', { bubbles: true }));
+    };
+
+    recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        alert('Error during speech recognition: ' + event.error);
+    };
+
+    recognition.onend = () => {
+        console.log('Speech recognition ended.');
+    };
+
+    recognition.start();
+};
+</script>
 """, unsafe_allow_html=True)
 
 # --- SESSION STATE ---
@@ -503,6 +553,10 @@ for i, message in enumerate(st.session_state.history):
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
+        # Display audio for assistant responses
+        if message["role"] == "assistant" and message.get("type") == "answer" and "audio_file" in message:
+            st.audio(message["audio_file"], format="audio/mp3")
+
         # Handle feedback for answers
         if message.get("type") == "answer" and "interaction_id" in message:
             interaction_id = message['interaction_id']
@@ -537,9 +591,20 @@ for i, message in enumerate(st.session_state.history):
                 if st.button(option, key=f"option_{i}_{option}"):
                     response = pattern_to_response[option]
                     
+                    # Generate audio for the response
+                    tts = gTTS(text=response, lang='en')
+                    audio_file = f"response_{uuid.uuid4()}.mp3"
+                    tts.save(audio_file)
+                    
                     st.session_state.history.append({"role": "user", "content": option})
                     interaction_id = log_interaction(st.session_state.session_id, original_prompt, response, 0.85) 
-                    st.session_state.history.append({"role": "assistant", "content": response, "type": "answer", "interaction_id": interaction_id})
+                    st.session_state.history.append({
+                        "role": "assistant",
+                        "content": response,
+                        "type": "answer",
+                        "interaction_id": interaction_id,
+                        "audio_file": audio_file
+                    })
                     
                     st.session_state.history[i]["selection_made"] = True
                     st.rerun()
@@ -565,8 +630,19 @@ if st.session_state.pending_suggestion:
 
         if best_q and best_score >= 0.75:
             response = pattern_to_response[best_q]
+            # Generate audio for the response
+            tts = gTTS(text=response, lang='en')
+            audio_file = f"response_{uuid.uuid4()}.mp3"
+            tts.save(audio_file)
+            
             interaction_id = log_interaction(st.session_state.session_id, prompt, response, best_score)
-            st.session_state.history.append({"role": "assistant", "content": response, "type": "answer", "interaction_id": interaction_id})
+            st.session_state.history.append({
+                "role": "assistant",
+                "content": response,
+                "type": "answer",
+                "interaction_id": interaction_id,
+                "audio_file": audio_file
+            })
         else:
             # Generate options for unclear queries
             scored = []
@@ -587,8 +663,20 @@ if st.session_state.pending_suggestion:
     
     st.rerun()
 
-# --- CHAT INPUT ---
-if prompt := st.chat_input("💬 Ask me anything about BITS College..."):
+# --- CHAT INPUT WITH MICROPHONE ---
+col1, col2, col3 = st.columns([1, 10, 1])
+with col1:
+    if st.button("🎙️", key="mic_button", help="Speak your question"):
+        st.markdown("""
+        <input type="hidden" id="speech-input" />
+        <script>startRecognition();</script>
+        """, unsafe_allow_html=True)
+with col2:
+    prompt = st.chat_input("💬 Ask me anything about BITS College...", key="speech-input")
+with col3:
+    pass
+
+if prompt:
     # Add user message
     st.session_state.history.append({"role": "user", "content": prompt})
     
@@ -600,8 +688,19 @@ if prompt := st.chat_input("💬 Ask me anything about BITS College..."):
 
         if best_q and best_score >= 0.75:
             response = pattern_to_response[best_q]
+            # Generate audio for the response
+            tts = gTTS(text=response, lang='en')
+            audio_file = f"response_{uuid.uuid4()}.mp3"
+            tts.save(audio_file)
+            
             interaction_id = log_interaction(st.session_state.session_id, prompt, response, best_score)
-            st.session_state.history.append({"role": "assistant", "content": response, "type": "answer", "interaction_id": interaction_id})
+            st.session_state.history.append({
+                "role": "assistant",
+                "content": response,
+                "type": "answer",
+                "interaction_id": interaction_id,
+                "audio_file": audio_file
+            })
         else:
             # Generate options for unclear queries
             scored = []
