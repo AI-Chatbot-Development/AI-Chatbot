@@ -184,23 +184,7 @@ section[data-testid="stSidebar"] h3 {
     box-shadow: 0 4px 15px rgba(126, 193, 67, 0.6) !important;
 }
 
-/* Microphone button styling */
-.mic-button {
-    background: linear-gradient(135deg, #ff6b6b 0%, #e63946 100%) !important;
-    border: none !important;
-    border-radius: 50% !important;
-    width: 40px !important;
-    height: 40px !important;
-    margin-right: 8px !important;
-    transition: all 0.3s ease !important;
-    box-shadow: 0 3px 10px rgba(255, 107, 107, 0.4) !important;
-}
 
-.mic-button:hover {
-    background: linear-gradient(135deg, #e63946 0%, #d32f2f 100%) !important;
-    transform: scale(1.05);
-    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.6) !important;
-}
 
 /* Chat messages styling - Theme adaptive */
 .stChatMessage {
@@ -418,39 +402,7 @@ section[data-testid="stSidebar"] h4 {
 </style>
 """, unsafe_allow_html=True)
 
-# JavaScript for Web Speech API
-st.markdown("""
-<script>
-const startRecognition = () => {
-    if (!('webkitSpeechRecognition' in window)) {
-        alert('Sorry, your browser does not support speech recognition.');
-        return;
-    }
 
-    const recognition = new webkitSpeechRecognition();
-    recognition.lang = 'en-US';
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-
-    recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        document.getElementById('speech-input').value = transcript;
-        document.getElementById('speech-input').dispatchEvent(new Event('input', { bubbles: true }));
-    };
-
-    recognition.onerror = (event) => {
-        console.error('Speech recognition error:', event.error);
-        alert('Error during speech recognition: ' + event.error);
-    };
-
-    recognition.onend = () => {
-        console.log('Speech recognition ended.');
-    };
-
-    recognition.start();
-};
-</script>
-""", unsafe_allow_html=True)
 
 # --- SESSION STATE ---
 if 'session_id' not in st.session_state:
@@ -714,18 +666,8 @@ if st.session_state.pending_suggestion:
     
     st.rerun()
 
-# --- CHAT INPUT WITH MICROPHONE ---
-col1, col2, col3 = st.columns([1, 10, 1])
-with col1:
-    if st.button("🎙️", key="mic_button", help="Speak your question"):
-        st.markdown("""
-        <input type="hidden" id="speech-input" />
-        <script>startRecognition();</script>
-        """, unsafe_allow_html=True)
-with col2:
-    prompt = st.chat_input("💬 Ask me anything about BITS College...", key="speech-input")
-with col3:
-    pass
+# --- CHAT INPUT ---
+prompt = st.chat_input("💬 Ask me anything about BITS College...")
 
 if prompt:
     # Add user message
